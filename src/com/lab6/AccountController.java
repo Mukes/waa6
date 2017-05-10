@@ -3,10 +3,7 @@ package com.lab6;
 import com.lab6.domain.Account;
 import com.lab6.service.AccountService;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -40,5 +37,40 @@ public class AccountController {
             return Response.ok(account, MediaType.APPLICATION_JSON).build();
         }
         return Response.noContent().build();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response create(Account account) {
+        account = accountService.createAccount(account.getAccountnumber(), account.getCustomer().getName());
+        if (account!=null){
+            return Response.status(201).entity(account).build();
+        }
+        return Response.status(400).entity("Error in creating account").build();
+    }
+
+    /**
+     * Passing values for Deposit and withdraw has security issue
+     * But Were used just to demonstrate use of query param in Jax RS
+     * @param accountNo
+     * @param deposit
+     * @param withdraw
+     * @return
+     */
+    @PUT
+    @Path("/{accountNo}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response update(@PathParam("accountNo") long accountNo, @QueryParam("deposit") double deposit, @QueryParam("withdraw") double withdraw ) {
+        if (deposit>0){
+            accountService.deposit(accountNo, deposit);
+            return Response.status(200).entity(deposit + "$ sucessfully Deposited").build();
+        }
+        if (withdraw>0){
+            accountService.deposit(accountNo, withdraw);
+            return Response.status(200).entity(withdraw + "$ sucessfully Withdrawn").build();
+        }
+        return Response.status(400).entity("Invalid Input").build();
     }
 }
